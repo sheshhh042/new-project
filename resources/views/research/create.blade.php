@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Create Research')
+@section('title', 'Add Research')
 
 @section('content')
-<h1 class="mb-0">Add Research</h1>
+
 <hr/>
 <div class="container">
     @if(session()->has('error'))

@@ -3,7 +3,7 @@
 @section('title', 'Edit Research')
 
 @section('content')
-<h1 class="mb-0">Edit Research</h1>
+
 <hr/>
 <div class="container">
     <form action="{{ route('research.update', $research->id) }}" method="POST">

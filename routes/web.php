@@ -2,14 +2,17 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OtpController;
-use App\Http\Controllers\ResearchContoller;
-use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ResearchController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Authentication Routes
 Route::controller(AuthController::class)->group(function () {
     Route::get('register', 'register')->name('register');
     Route::post('register', 'registerSave')->name('register.save');
@@ -52,8 +55,17 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // Other Authenticated Routes
-    Route::get('/profile', [AuthController::class, 'profile'])->name('profile');
+    // Profile & Settings Routes (Merged)
+
+     Route::get('/profile-settings', [ProfileSettingsController::class, 'edit'])->name('profile.settings');
+     Route::put('/profile-settings/update', [ProfileSettingsController::class, 'update'])->name('settings.update');
+ 
+    // ✅ Add this missing route for profile updates
+    Route::put('/profile/update', [ProfileSettingsController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile', [ProfileSettingsController::class, 'profile'])->name('profile');
+    
+
+    // Report Route
     Route::get('/report', [ReportController::class, 'index'])->name('report');
 });
 

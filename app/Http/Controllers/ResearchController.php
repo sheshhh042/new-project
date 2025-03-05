@@ -182,6 +182,10 @@ class ResearchController extends Controller
     public function show($id)
     {
         $research = Research::findOrFail($id);
-        return view('research.index', compact('research'));
+    
+        // Convert file path from "public/" to "storage/"
+        $research->file_path = str_replace('public/', 'storage/', $research->file_path);
+    
+        return view('research.show', compact('research'));
     }
 }
