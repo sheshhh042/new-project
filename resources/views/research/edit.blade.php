@@ -6,7 +6,7 @@
 
 <hr/>
 <div class="container">
-    <form action="{{ route('research.update', $research->id) }}" method="POST">
+    <form action="{{ route('research.update', $research->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="mb-3">
@@ -17,46 +17,45 @@
             @enderror
         </div>
         <div class="mb-3">
-            <label for="Research_Title" class="form-label">Research Title</label>
-            <input type="text" name="Research_Title" class="form-control" id="Research_Title" value="{{ $research->Research_Title }}" required>
-            @error('Research_Title')
+            <label for="research_title" class="form-label">Research Title</label>
+            <input type="text" name="research_title" class="form-control" id="research_title" value="{{ $research->research_title }}" required>
+            <input type="hidden" name="old_research_title" value="{{ $research->research_title }}">
+            @error('research_title')
             <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
         <div class="mb-3">
-            <label for="Author" class="form-label">Author</label>
-            <input type="text" name="Author" class="form-control" id="Author" value="{{ $research->Author }}" required>
-            @error('Author')
+            <label for="author" class="form-label">Author</label>
+            <input type="text" name="author" class="form-control" id="author" value="{{ $research->author }}" required>
+            <input type="hidden" name="old_author" value="{{ $research->author }}">
+            @error('author')
             <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
         <div class="mb-3">
-            <label for="Location" class="form-label">Location</label>
-            <input type="text" name="Location" class="form-control" id="Location" value="{{ $research->Location }}" required>
-            @error('Location')
+            <label for="location" class="form-label">Location</label>
+            <input type="text" name="location" class="form-control" id="location" value="{{ $research->location }}" required>
+            @error('location')
             <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
         <div class="mb-3">
             <label for="subject_area" class="form-label">Subject Area</label>
             <select name="subject_area" class="form-control" id="subject_area" required>
-                <option value="Comptech">Comptech</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Education">Education</option>
-                <option value="BSEd-English">(BSEd)-English</option>
-                <option value="BSEd-Filipino">(BSEd)-Filipino</option>
-                <option value="BSEd-Mathematics">(BSEd)-Mathematics</option>
-                <option value="BSEd-Social Studies">(BSEd)-Social Studies</option>
-                <option value="Tourism">Tourism</option>
-                <option value="Hospitality Management">Hospitality Management</option>
+                <option value="Comptech" {{ $research->subject_area == 'Comptech' ? 'selected' : '' }}>Comptech</option>
+                <option value="Electronics" {{ $research->subject_area == 'Electronics' ? 'selected' : '' }}>Electronics</option>
+                <option value="Education" {{ $research->subject_area == 'Education' ? 'selected' : '' }}>Education</option>
+                <option value="BSEd-English" {{ $research->subject_area == 'BSEd-English' ? 'selected' : '' }}>BSEd-English</option>
+                <option value="BSEd-Filipino" {{ $research->subject_area == 'BSEd-Filipino' ? 'selected' : '' }}>BSEd-Filipino</option>
+                <option value="BSEd-Mathematics" {{ $research->subject_area == 'BSEd-Mathematics' ? 'selected' : '' }}>BSEd-Mathematics</option>
+                <option value="BSEd-Social Studies" {{ $research->subject_area == 'BSEd-Social Studies' ? 'selected' : '' }}>BSEd-Social Studies</option>
+                <option value="Tourism" {{ $research->subject_area == 'Tourism' ? 'selected' : '' }}>Tourism</option>
+                <option value="Hospitality Management" {{ $research->subject_area == 'Hospitality Management' ? 'selected' : '' }}>Hospitality Management</option>
             </select>
         </div>
         <div class="mb-3">
-            <label for="file_path" class="form-label">File Path</label>
-            <input type="text" name="file_path" class="form-control" id="file_path" value="{{ $research->file_path }}" required>
-            @error('file_path')
-            <div class="text-danger">{{ $message }}</div>
-            @enderror
+            <label for="research_file" class="form-label">Upload Research File (PDF only)</label>
+            <input type="file" name="research_file" class="form-control" id="research_file" accept=".pdf">
         </div>
         <div class="d-grid">
             <button type="submit" class="btn btn-primary">Update Research</button>

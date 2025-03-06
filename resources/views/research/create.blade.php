@@ -39,10 +39,11 @@
         </div>
 
         <!-- File Upload Field -->
-        <div class="mb-3">
-            <label for="research_file" class="form-label">Upload Research File (PDF only)</label>
-            <input type="file" name="research_file" class="form-control" id="research_file" accept=".pdf" required>
-        </div>
+        
+    <div class="mb-3">
+        <label for="research_file" class="form-label">Upload Research File (PDF only)</label>
+        <input type="file" name="research_file" class="form-control" id="research_file" accept=".pdf" required>
+    </div>
 
         <div class="d-grid">
             <button type="submit" class="btn btn-primary">Submit</button>

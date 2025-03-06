@@ -10,6 +10,7 @@
     {{ session()->get('success') }}
 </div>
 @endif
+
 <table class="table table-hover">
     <thead class="table-primary">
     <tr>

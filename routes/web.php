@@ -36,14 +36,18 @@ Route::middleware('auth')->group(function () {
 
     // Research Routes
     Route::controller(ResearchController::class)->prefix('research')->group(function () {
-        Route::get('', 'index')->name('research');
-        Route::get('view/{research}', 'view')->name('research.view');
-        Route::get('/research/{id}/view', [ResearchController::class, 'viewFile'])->name('research.view');
-        Route::get('user-view', 'userView')->name('research.userView');
-        Route::get('department/{department}', 'department')->name('research.department');
-        Route::get('search', 'search')->name('research.search');
+        Route::get('', 'index')->name('research.index'); // Main index route
+        Route::get('/create', 'create')->name('research.create'); // Create new research
+        Route::post('', 'store')->name('research.store'); // Store new research
+        Route::get('{research}/view', 'viewFile')->name('research.view'); // View specific research file
+        Route::get('{research}/edit', 'edit')->name('research.edit'); // Edit specific research
+        Route::put('{research}', 'update')->name('research.update'); // Update specific research
+        Route::delete('{research}', 'destroy')->name('research.destroy'); // Delete specific research
+        Route::get('user-view', 'userView')->name('research.userView'); // View for users
+        Route::get('department/{department}', 'department')->name('research.department'); // View by department
+        Route::get('search', 'search')->name('research.search'); // Search functionality
     });
-
+    
     // Admin-Only Research Routes
     Route::middleware('can:isAdmin')->group(function () {
         Route::controller(ResearchController::class)->prefix('research')->group(function () {
@@ -68,6 +72,9 @@ Route::middleware('auth')->group(function () {
     // Report Route
     Route::get('/report', [ReportController::class, 'index'])->name('report');
 });
+
+    // Search
+    Route::get('/research/search', [ResearchController::class, 'search'])->name('research.search');
 
 // Test Email Route
 Route::get('/test-email', function () {

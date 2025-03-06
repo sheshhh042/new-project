@@ -4,8 +4,6 @@
 
 @section('content')
     <div class="container-fluid">
-
-
         <div class="row">
             <!-- Research by Department (Pie Chart) -->
             <div class="col-lg-6 mb-4">
@@ -91,6 +89,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            console.log("Chart.js loaded:", typeof Chart !== "undefined");
+
             // Total Research Chart
             var totalCanvas = document.getElementById('totalResearchChart');
             if (totalCanvas) {
@@ -120,19 +120,30 @@
                         }
                     }
                 });
+            } else {
+                console.warn("Total research chart canvas not found.");
             }
 
             // Department Research Chart
             var deptCanvas = document.getElementById('departmentChart');
             if (deptCanvas) {
                 var ctxDepartment = deptCanvas.getContext('2d');
+
+                var labels = @json(array_values($departments->pluck('subject_area')->toArray()));
+                var data = @json(array_values($departments->pluck('total')->toArray()));
+
+                if (labels.length === 0 || data.length === 0) {
+                    console.error("No data for department chart!");
+                    return;
+                }
+
                 new Chart(ctxDepartment, {
                     type: 'pie',
                     data: {
-                        labels: @json($departments->pluck('subject_area')),
+                        labels: labels,
                         datasets: [{
                             label: 'Total Research',
-                            data: @json($departments->pluck('total')),
+                            data: data,
                             backgroundColor: [
                                 'rgba(255, 99, 132, 0.2)',
                                 'rgba(54, 162, 235, 0.2)',
@@ -172,6 +183,8 @@
                         }
                     }
                 });
+            } else {
+                console.error("Canvas for department chart not found.");
             }
         });
     </script>
