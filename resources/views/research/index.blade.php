@@ -61,7 +61,7 @@
                     <th>#</th>
                     <th>Research Title</th>
                     <th>Author</th>
-                    <th>Date</th>
+                    <th>Date of Approval</th>
                     <th>Location</th>
                     <th>Subject Area</th>
                     <th>Action</th>
@@ -78,18 +78,16 @@
                         <td>{{ $research->subject_area }}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                data-target="#viewModal{{ $research->id }}">
+                                data-target="#viewPDFModal{{ $research->id }}"
+                                onclick="viewPDF('{{ asset('storage/' . $research->file_path) }}', {{ $research->id }})">
                                 <i class="fas fa-eye"></i> View
                             </button>
 
                             <!-- Admin Options -->
                             @if(Auth::user()->role == 'admin')
-                                <!-- Edit Button with Icon -->
                                 <a href="{{ route('research.edit', $research->id) }}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-
-                                <!-- Delete Button with Icon (Triggers Modal) -->
                                 <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#deleteModal{{ $research->id }}">
                                     <i class="fas fa-trash"></i> Delete
@@ -126,20 +124,23 @@
                                         </div>
                                     </div>
                                 </div>
-
                             @endif
                         </td>
                     </tr>
+
                     <!-- View Modal -->
-                    <div class="modal fade" id="viewModal{{ $research->id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ $research->id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
+                    <div class="modal fade" id="viewPDFModal{{ $research->id }}" tabindex="-1" role="dialog"
+                        aria-labelledby="viewPDFModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="viewModalLabel{{ $research->id }}">View Research</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title" id="viewPDFModalLabel">View Research File</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
                                 <div class="modal-body">
-                                    <iframe src="{{ asset(str_replace('public/', 'storage/', $research->file_path)) }}" style="width:100%; height:500px;" frameborder="0"></iframe>
+                                    <iframe id="pdfViewer{{ $research->id }}" src="" width="100%" height="600px"></iframe>
                                 </div>
                             </div>
                         </div>
@@ -155,6 +156,12 @@
 @endsection
 
 @section('scripts')
+    <script>
+        function viewPDF(url, id) {
+            document.getElementById('pdfViewer' + id).src = url;
+        }
+    </script>
+
     <script>
         // Delete Confirmation with Notification
         document.addEventListener("DOMContentLoaded", function () {

@@ -38,8 +38,7 @@
             </select>
         </div>
 
-        <!-- File Upload Field -->
-        
+        <!-- File Upload Field -->    
     <div class="mb-3">
         <label for="research_file" class="form-label">Upload Research File (PDF only)</label>
         <input type="file" name="research_file" class="form-control" id="research_file" accept=".pdf" required>

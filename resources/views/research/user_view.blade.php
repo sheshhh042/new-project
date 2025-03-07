@@ -15,35 +15,35 @@
 
 <!-- Search & Filter Section -->
 <form action="{{ route('research.search') }}" method="GET" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="Search for research..."
-                value="{{ request('keyword') }}" required>
-            <div class="input-group-append">
-                <button class="btn btn-primary" type="submit">
-                    <i class="fas fa-search"></i> Search
-                </button>
-            </div>
+    <div class="input-group">
+        <input type="text" name="keyword" class="form-control" placeholder="Search for research..."
+            value="{{ request('keyword') }}" required>
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
         </div>
+    </div>
 
-        <!-- Filter Dropdown -->
-        <div class="mt-2 d-flex align-items-center">
-            <div class="dropdown">
-                <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
-                    id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-filter mr-1"></i> Year
-                </button>
-                <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
-                    @for($year = 2019; $year <= 2025; $year += 2)
-                        @php $nextYear = $year + 1; @endphp
-                        <a class="dropdown-item px-3 py-2 text-sm"
-                            href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
-                            <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
-                        </a>
-                    @endfor
-                </div>
+    <!-- Filter Dropdown -->
+    <div class="mt-2 d-flex align-items-center">
+        <div class="dropdown">
+            <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
+                id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-filter mr-1"></i> Year
+            </button>
+            <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
+                @for($year = 2019; $year <= 2025; $year += 2)
+                    @php $nextYear = $year + 1; @endphp
+                    <a class="dropdown-item px-3 py-2 text-sm"
+                        href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
+                        <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
+                    </a>
+                @endfor
             </div>
         </div>
-    </form>
+    </div>
+</form>
 
 <div class="table-responsive"> <!-- Added for responsiveness -->
     <table class="table table-hover">
@@ -69,22 +69,27 @@
                         <td>{{ $research->Location }}</td>
                         <td>{{ $research->subject_area }}</td>
                         <td>
-                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#viewFile{{ $research->id }}">
-                                View
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                data-target="#viewPDFModal{{ $research->id }}"
+                                onclick="viewPDF('{{ asset('storage/' . $research->file_path) }}', {{ $research->id }})">
+                                <i class="fas fa-eye"></i> View
                             </button>
                         </td>
                     </tr>
 
                     <!-- View Research Modal (Inside the loop to avoid duplicate IDs) -->
-                    <div class="modal fade" id="viewFile{{ $research->id }}" tabindex="-1" role="dialog">
+                    <div class="modal fade" id="viewPDFModal{{ $research->id }}" tabindex="-1" role="dialog"
+                        aria-labelledby="viewPDFModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title">Research File: {{ $research->Research_Title }}</h5>
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h5 class="modal-title" id="viewPDFModalLabel">View Research File</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
                                 <div class="modal-body">
-                                    <iframe src="{{ asset('storage/' . $research->file_path) }}" width="100%" height="500px"></iframe>
+                                    <iframe id="pdfViewer{{ $research->id }}" src="" width="100%" height="600px"></iframe>
                                 </div>
                             </div>
                         </div>

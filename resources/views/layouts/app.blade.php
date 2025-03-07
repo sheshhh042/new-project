@@ -10,6 +10,9 @@
     <meta name="author" content="">
 
     <title>LLCC Research</title>
+
+    <link rel="icon" href="{{ asset('admin_assets/img/llcc.png') }}" type="image/png">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom fonts for this template-->
     <link href="{{ asset('admin_assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
@@ -19,7 +22,13 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ asset('admin_assets/css/sb-admin-2.min.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+   
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+
+
+
 </head>
 
 <body id="page-top">
@@ -109,7 +118,8 @@
     <script src="{{ asset('admin_assets/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin_assets/js/demo/chart-pie-demo.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    @vite(['resources/js/app.js'])
+    @yield('scripts')
 </body>
 
 </html>

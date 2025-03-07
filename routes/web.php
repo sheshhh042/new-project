@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::get('search', 'search')->name('research.search'); // Search functionality
     });
     
+    
     // Admin-Only Research Routes
     Route::middleware('can:isAdmin')->group(function () {
         Route::controller(ResearchController::class)->prefix('research')->group(function () {

@@ -34,36 +34,37 @@ class ResearchController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'date' => 'required|date',
-        'research_title' => 'required|string|max:255',
-        'author' => 'required|string|max:255',
-        'location' => 'required|string|max:255',
-        'subject_area' => 'required|string|max:255',
-        'research_file' => 'required|file|mimes:pdf|max:2048',
-    ]);
-
-    $cleanTitle = trim(strtolower($request->research_title));
-    $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])->first();
-
-    if ($existingResearch) {
-        return redirect()->back()->withInput()->with('error', 'This research title already exists.');
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'research_title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'subject_area' => 'required|string|max:255',
+            'research_file' => 'required|file|mimes:pdf|max:2048',
+        ]);
+    
+        $cleanTitle = trim(strtolower($request->research_title));
+        $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])->first();
+    
+        if ($existingResearch) {
+            return redirect()->back()->withInput()->with('error', 'This research title already exists.');
+        }
+    
+        $filePath = $request->file('research_file')->store('research_files', 'public');
+    
+        $research = new Research();
+        $research->date = $request->date;
+        $research->research_title = $request->research_title;
+        $research->author = $request->author;
+        $research->location = $request->location;
+        $research->subject_area = $request->subject_area;
+        $research->file_path = $filePath;
+        $research->save();
+    
+        return redirect()->route('research.index')->with('success', 'Research added successfully.');
     }
-
-    $filePath = $request->file('research_file')->store('public/research_files');
-    Research::create([
-        'date' => $request->date,
-        'research_title' => $request->research_title,
-        'author' => $request->author,
-        'location' => $request->location,
-        'subject_area' => $request->subject_area,
-        'file_path' => str_replace('public/', 'storage/', $filePath),
-    ]);
-
-    return redirect()->route('research.index')->with('success', 'Research added successfully.');
-}
-
+    
     public function edit(Research $research)
     {
         $departments = [
@@ -82,39 +83,40 @@ class ResearchController extends Controller
     }
 
     public function update(Request $request, Research $research)
-    {
-        $request->validate([
-            'date' => 'required|date',
-            'research_title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'subject_area' => 'required|string|max:255',
-            'research_file' => 'nullable|file|mimes:pdf|max:2048',
-        ]);
+{
+    $request->validate([
+        'date' => 'required|date',
+        'research_title' => 'required|string|max:255',
+        'author' => 'required|string|max:255',
+        'location' => 'required|string|max:255',
+        'subject_area' => 'required|string|max:255',
+        'research_file' => 'nullable|file|mimes:pdf|max:2048',
+    ]);
 
-        $cleanTitle = trim(strtolower($request->research_title));
-        $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])
-            ->where('id', '!=', $research->id)
-            ->first();
+    $cleanTitle = trim(strtolower($request->research_title));
+    $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])
+        ->where('id', '!=', $research->id)
+        ->first();
 
-        if ($existingResearch) {
-            return redirect()->back()->withInput()->with('error', 'This research title already exists.');
-        }
-
-        $data = $request->only(['date', 'research_title', 'author', 'location', 'subject_area']);
-        if ($request->hasFile('research_file')) {
-            if ($research->file_path && Storage::exists('public/' . $research->file_path)) {
-                Storage::delete('public/' . $research->file_path);
-            }
-
-            $filePath = $request->file('research_file')->store('public/research_files');
-            $data['file_path'] = str_replace('public/', 'storage/', $filePath);
-        }
-
-        $research->update($data);
-
-        return redirect()->route('research.index')->with('success', 'Research updated successfully.');
+    if ($existingResearch) {
+        return redirect()->back()->withInput()->with('error', 'This research title already exists.');
     }
+
+    $data = $request->only(['date', 'research_title', 'author', 'location', 'subject_area']);
+    if ($request->hasFile('research_file')) {
+        if ($research->file_path && Storage::exists($research->file_path)) {
+            Storage::delete($research->file_path);
+        }
+
+        $filePath = $request->file('research_file')->store('research_files', 'public');
+        $data['file_path'] = $filePath;
+    }
+
+    $research->update($data);
+
+    return redirect()->route('research.index')->with('success', 'Research updated successfully.');
+}
+
 
     public function destroy(Research $research)
     {
@@ -164,16 +166,15 @@ class ResearchController extends Controller
     }
 
     public function viewFile($id)
-    {
-        $research = Research::findOrFail($id);
+{
+    $research = Research::findOrFail($id);
 
-        if (!$research->file_path || !Storage::exists("public/{$research->file_path}")) {
-            return abort(404, 'File not found');
-        }
-        dd($research);
-
-        return response()->file(storage_path("app/public/{$research->file_path}"));
+    if (!$research->file_path || !Storage::exists($research->file_path)) {
+        return abort(404, 'File not found');
     }
+
+    return response()->file(storage_path("app/public/{$research->file_path}"));
+}
 
     // Display researches by department
     public function department($department)
