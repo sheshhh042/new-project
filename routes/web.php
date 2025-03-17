@@ -3,14 +3,15 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileSettingsController;
+
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 // Authentication Routes
 Route::controller(AuthController::class)->group(function () {
@@ -75,13 +76,19 @@ Route::middleware('auth')->group(function () {
 });
 
     // Search
+    // routes/web.php
+
+
     Route::get('/research/search', [ResearchController::class, 'search'])->name('research.search');
 
-// Test Email Route
-Route::get('/test-email', function () {
-    Mail::raw('This is a test email', function ($message) {
-        $message->to('joshuamangubat62@gmail.com')->subject('Test Email');
-    });
 
-    return 'Email sent';
-});
+
+// // Test Email Route
+// Route::get('/test-email', function () {
+//     Mail::raw('This is a test email', function ($message) {
+//         $message->to('joshuamangubat62@gmail.com')->subject('Test Email');
+//     });
+
+//     return 'Email sent';
+// });
+

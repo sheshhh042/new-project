@@ -83,7 +83,7 @@ class AuthController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return redirect()->back()->withErrors(['email' => 'Invalid credentials.']);
+        return redirect()->back()->withErrors(['email' => 'Invalid Email Address.']);
     }
 
     public function logout()

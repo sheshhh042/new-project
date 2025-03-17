@@ -1,3 +1,4 @@
+
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
@@ -21,8 +22,7 @@
 
     <!-- Nav Item - Department -->
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
-            aria-controls="collapseTwo">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
             <i class="fa fa-server"></i>
             <span>Department</span>
         </a>
@@ -58,7 +58,8 @@
     <li class="nav-item">
         <a class="nav-link" href="{{ route('report') }}">
             <i class="fas fa-fw fa-chart-bar"></i>
-            <span>Report</span></a>
+            <span>Report</span>
+        </a>
     </li>
 
     <!-- Divider -->
@@ -68,7 +69,8 @@
     <li class="nav-item">
         <a class="nav-link" href="{{ route('logout') }}" data-toggle="modal" data-target="#logoutModal">
             <i class="fas fa-fw fa-sign-out-alt"></i>
-            <span>Logout</span></a>
+            <span>Logout</span>
+        </a>
     </li>
 
     <!-- Divider -->

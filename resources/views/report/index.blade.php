@@ -85,9 +85,9 @@
     </div>
 @endsection
 
-<!-- @section('scripts')
+@section('scripts')
     @vite('resources/js/chart-setup.js')
     <script>
         var totalResearch = {{ $totalResearch }};
     </script>
-@endsection -->
+@endsection

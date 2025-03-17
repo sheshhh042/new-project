@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Storage;
 class ResearchController extends Controller
 {
     // Display all researches
-    public function index()
-    {
-        $researches = Research::all(); // Fetch all research entries without pagination
-        return view('research.index', compact('researches'));
-    }
+    public function index(Request $request)
+{
+    $researches = Research::orderBy('date', 'desc')->get(); // Change 'desc' to 'asc' for ascending order
+    return view('research.index', compact('researches'));
+}
 
     public function create()
     {
@@ -34,37 +34,39 @@ class ResearchController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'date' => 'required|date',
-            'research_title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'subject_area' => 'required|string|max:255',
-            'research_file' => 'required|file|mimes:pdf|max:2048',
-        ]);
-    
-        $cleanTitle = trim(strtolower($request->research_title));
-        $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])->first();
-    
-        if ($existingResearch) {
-            return redirect()->back()->withInput()->with('error', 'This research title already exists.');
-        }
-    
-        $filePath = $request->file('research_file')->store('research_files', 'public');
-    
-        $research = new Research();
-        $research->date = $request->date;
-        $research->research_title = $request->research_title;
-        $research->author = $request->author;
-        $research->location = $request->location;
-        $research->subject_area = $request->subject_area;
-        $research->file_path = $filePath;
-        $research->save();
-    
-        return redirect()->route('research.index')->with('success', 'Research added successfully.');
-    }
-    
+{
+    $request->validate([
+        'date' => 'required|date',
+        'research_title' => 'required|string|max:255',
+        'author' => 'required|string|max:255',
+        'location' => 'required|string|max:255',
+        'subject_area' => 'required|string|max:255',
+        'research_file' => 'required|file|mimes:pdf|max:2048',
+        'reference_id' => 'nullable|string|max:255',
+        'keywords' => ['required', 'string', function ($attribute, $value, $fail) {
+            $keywords = explode(',', $value);
+            if (count($keywords) > 5) {
+                $fail('You can only provide up to 5 keywords.');
+            }
+        }],
+    ]);
+
+    $filePath = $request->file('research_file')->store('research_files', 'public');
+
+    $research = new Research();
+    $research->date = $request->date;
+    $research->research_title = $request->research_title;
+    $research->author = $request->author;
+    $research->location = $request->location;
+    $research->subject_area = $request->subject_area;
+    $research->file_path = $filePath;
+    $research->reference_id = $request->reference_id;
+    $research->keywords = implode(',', array_map('trim', explode(',', $request->keywords))); // Save keywords
+    $research->save();
+
+    return redirect()->route('research.index')->with('success', 'Research added successfully.');
+}
+
     public function edit(Research $research)
     {
         $departments = [
@@ -83,40 +85,39 @@ class ResearchController extends Controller
     }
 
     public function update(Request $request, Research $research)
-{
-    $request->validate([
-        'date' => 'required|date',
-        'research_title' => 'required|string|max:255',
-        'author' => 'required|string|max:255',
-        'location' => 'required|string|max:255',
-        'subject_area' => 'required|string|max:255',
-        'research_file' => 'nullable|file|mimes:pdf|max:2048',
-    ]);
-
-    $cleanTitle = trim(strtolower($request->research_title));
-    $existingResearch = Research::whereRaw('LOWER(TRIM(research_title)) = ?', [$cleanTitle])
-        ->where('id', '!=', $research->id)
-        ->first();
-
-    if ($existingResearch) {
-        return redirect()->back()->withInput()->with('error', 'This research title already exists.');
-    }
-
-    $data = $request->only(['date', 'research_title', 'author', 'location', 'subject_area']);
-    if ($request->hasFile('research_file')) {
-        if ($research->file_path && Storage::exists($research->file_path)) {
-            Storage::delete($research->file_path);
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'research_title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'subject_area' => 'required|string|max:255',
+            'research_file' => 'nullable|file|mimes:pdf|max:2048',
+            'reference_id' => 'nullable|string|max:255',
+            'keywords' => ['required', 'string', function ($attribute, $value, $fail) {
+                $keywords = explode(',', $value);
+                if (count($keywords) > 5) {
+                    $fail('You can only provide up to 5 keywords.');
+                }
+            }],
+        ]);
+    
+        $data = $request->only(['date', 'location', 'subject_area', 'reference_id']);
+        $data['keywords'] = implode(',', array_map('trim', explode(',', $request->keywords)));
+    
+        if ($request->hasFile('research_file')) {
+            if ($research->file_path && Storage::exists($research->file_path)) {
+                Storage::delete($research->file_path);
+            }
+            $data['file_path'] = $request->file('research_file')->store('research_files', 'public');
         }
-
-        $filePath = $request->file('research_file')->store('research_files', 'public');
-        $data['file_path'] = $filePath;
+    
+        $research->update($data);
+    
+        return redirect()->route('research.index')->with('success', 'Research updated successfully.');
     }
-
-    $research->update($data);
-
-    return redirect()->route('research.index')->with('success', 'Research updated successfully.');
-}
-
+        
+    
 
     public function destroy(Research $research)
     {
@@ -133,48 +134,58 @@ class ResearchController extends Controller
     {
         $keyword = $request->input('keyword');
         $filter = $request->input('filter');
-
+        $department = $request->input('department'); // Get department parameter
+    
         if (!empty($keyword)) {
             SearchLog::create(['keyword' => $keyword]);
         }
-
+    
         $query = Research::query();
+        
+        // Filter by keyword
         if (!empty($keyword)) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('research_title', 'LIKE', "%$keyword%")
                     ->orWhere('author', 'LIKE', "%$keyword%")
                     ->orWhere('location', 'LIKE', "%$keyword%")
                     ->orWhere('subject_area', 'LIKE', "%$keyword%")
-                    ->orWhere('date', 'LIKE', "%$keyword%");
+                    ->orWhere('date', 'LIKE', "%$keyword%")
+                    ->orWhere('reference_id', 'LIKE', "%$keyword%"); // Include reference_id in search
             });
         }
-
+    
+        // Filter by year range
         if (!empty($filter)) {
             $years = explode('-', $filter);
             if (count($years) === 2) {
                 $query->whereBetween('date', ["{$years[0]}-01-01", "{$years[1]}-12-31"]);
             }
         }
-
+    
+        // Filter by department
+        if (!empty($department)) {
+            $query->where('department', $department);
+        }
+    
         $researches = $query->get();
-
+    
         if ($request->ajax()) {
             return view('research.partials.research_list', compact('researches'))->render();
         }
-
-        return view('research.index', compact('researches'));
+    
+        return view('research.index', compact('researches', 'department')); // Pass department to the view
     }
-
+    
     public function viewFile($id)
-{
-    $research = Research::findOrFail($id);
+    {
+        $research = Research::findOrFail($id);
 
-    if (!$research->file_path || !Storage::exists($research->file_path)) {
-        return abort(404, 'File not found');
+        if (!$research->file_path || !Storage::exists($research->file_path)) {
+            return abort(404, 'File not found');
+        }
+
+        return response()->file(storage_path("app/public/{$research->file_path}"));
     }
-
-    return response()->file(storage_path("app/public/{$research->file_path}"));
-}
 
     // Display researches by department
     public function department($department)

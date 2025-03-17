@@ -42,7 +42,7 @@
                             <a class="nav-link active" data-toggle="tab" href="#profile">Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#settings">Settings</a>
+                            <a class="nav-link" data-toggle="tab" href="#settings">Change Password</a>
                         </li>
                     </ul>
 
@@ -70,22 +70,6 @@
                                     </div>
                                 </div>
 
-                                <div class="row mt-3">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Phone</label>
-                                            <input type="text" class="form-control" name="phone" placeholder="Phone Number">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Address</label>
-                                            <input type="text" class="form-control" name="address" 
-                                                placeholder="Address" value="{{ auth()->user()->address }}">
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div class="text-center mt-4">
                                     <button type="submit" class="btn btn-primary w-100">Update Profile</button>
                                 </div>
@@ -106,14 +90,6 @@
                                 <div class="form-group">
                                     <label>Confirm Password</label>
                                     <input type="password" class="form-control" name="password_confirmation" placeholder="Confirm New Password">
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Notification Preferences</label>
-                                    <select class="form-control" name="notifications">
-                                        <option value="enabled">Enable Notifications</option>
-                                        <option value="disabled">Disable Notifications</option>
-                                    </select>
                                 </div>
 
                                 <div class="text-center mt-4">

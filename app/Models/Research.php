@@ -10,10 +10,7 @@ class Research extends Model
     use HasFactory;
 
     protected $fillable = [
-        'date',
-        'research_title',
-        'author',
-        'location',
-        'subject_area',
+        'research_title', 'author', 'location', 'subject_area', 'date', 'file_path', 'department','reference_id', 'keywords',
     ];
+
 }

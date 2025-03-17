@@ -31,7 +31,7 @@
                     <i class="fas fa-filter mr-1"></i> Year
                 </button>
                 <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
-                    @for($year = 2019; $year <= 2025; $year += 2)
+                    @for($year = 2017; $year <= 2025; $year += 2)
                         @php $nextYear = $year + 1; @endphp
                         <a class="dropdown-item px-3 py-2 text-sm"
                             href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
@@ -56,9 +56,9 @@
     <!-- Research Table -->
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead class="table-primary">
+            <thead class="table-primary text-center"> <!-- Add the text-center class here -->
                 <tr>
-                    <th>#</th>
+                    <th>Book ID</th>
                     <th>Research Title</th>
                     <th>Author</th>
                     <th>Date of Approval</th>
@@ -67,10 +67,10 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-center"> <!-- Add the text-center class here -->
                 @forelse($researches as $research)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $research->reference_id }}</td>
                         <td>{{ $research->Research_Title }}</td>
                         <td>{{ $research->Author }}</td>
                         <td>{{ $research->date }}</td>
