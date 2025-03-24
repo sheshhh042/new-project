@@ -1,4 +1,3 @@
-
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
@@ -61,6 +60,19 @@
             <span>Report</span>
         </a>
     </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Nav Item - Recent Delete (Admin Only) -->
+    @can('isAdmin') <!-- This ensures that only admins see this item -->
+    <li class="nav-item">
+        <a class="nav-link" href="{{ route('research.recentlyDeleted') }}">
+            <i class="fas fa-fw fa-trash-alt"></i>
+            <span>Recently Deleted</span>
+        </a>
+    </li>
+    @endcan
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

@@ -121,14 +121,40 @@ class ResearchController extends Controller
 
     public function destroy(Research $research)
     {
-        if ($research->file_path && Storage::exists('public/' . $research->file_path)) {
-            Storage::delete('public/' . $research->file_path);
-        }
-
+        // Soft delete
         $research->delete();
-
+    
         return redirect()->route('research.index')->with('success', 'Research deleted successfully.');
     }
+    
+    public function recentlyDeleted()
+    {
+        // Fetch all soft-deleted records
+        $researches = Research::onlyTrashed()->get();
+        return view('research.recentlyDeleted', compact('researches'));
+    }
+    
+    public function restore($id)
+    {
+        // Restore soft-deleted entry
+        $research = Research::withTrashed()->findOrFail($id);
+        $research->restore();
+    
+        return redirect()->route('research.recentlyDeleted')->with('success', 'Research restored successfully.');
+    }
+    
+    public function permanentDelete($id)
+    {
+        // Permanently delete soft-deleted entry
+        $research = Research::withTrashed()->findOrFail($id);
+        if ($research->file_path && Storage::exists($research->file_path)) {
+            Storage::delete($research->file_path);
+        }
+        $research->forceDelete();
+    
+        return redirect()->route('research.recentlyDeleted')->with('success', 'Research permanently deleted.');
+    }
+    
 
     public function search(Request $request)
     {
