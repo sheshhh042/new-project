@@ -5,6 +5,7 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SearchHistoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 
@@ -47,6 +48,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/recently-deleted', [ResearchController::class, 'recentlyDeleted'])->name('research.recentlyDeleted');
         Route::post('/restore/{id}', [ResearchController::class, 'restore'])->name('research.restore');
         Route::delete('/permanent-delete/{id}', [ResearchController::class, 'permanentDelete'])->name('research.permanentDelete');
+ 
+        Route::delete('/search-history/{id}', [SearchHistoryController::class, 'destroy'])->name('search-history.destroy');
+        
     });
 
     // Admin-Only Research Routes

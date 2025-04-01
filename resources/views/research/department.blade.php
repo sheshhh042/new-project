@@ -6,30 +6,30 @@
 
     <hr />
     <!-- Search & Filter Section -->
-    <form action="{{ route('research.search') }}" method="GET" class="mb-4">
+        <form action="{{ route('research.search') }}" method="GET" class="mb-4">
         <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="Search for research..."
-                value="{{ request('keyword') }}" required>
-            <input type="hidden" name="department" value="{{ $department }}"> <!-- Hidden input for department -->
+            <input type="text" name="keyword" class="form-control" placeholder="Search for research..." value="{{ request('keyword') }}" required>
+            <input type="hidden" name="department" value="{{ $department }}"> <!-- Ensure this is set -->
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search"></i> Search
                 </button>
             </div>
         </div>
+    </form>
 
         <!-- Filter Dropdown -->
         <div class="mt-2 d-flex align-items-center">
             <div class="dropdown">
                 <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
                     id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-filter mr-1"></i> Year
+                    <i class="fas fa-filter mr-1"></i> 
                 </button>
                 <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
-                    @for($year = 2017; $year <= 2025; $year += 2)
+                    @for($year = 2010; $year <= 2025; $year += 2)
                         @php $nextYear = $year + 1; @endphp
                         <a class="dropdown-item px-3 py-2 text-sm"
-                            href="{{ route('research.search', ['filter' => $year . '-' . $nextYear, 'department' => $department]) }}">
+                            href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
                             <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
                         </a>
                     @endfor
@@ -44,9 +44,9 @@
         </div>
     @endif
 
-  
+
     <div class="table-responsive">
-        <table class="table table-hover text-center"> 
+        <table class="table table-hover text-center">
             <thead class="table-primary">
                 <tr>
                     <th>Book ID</th>

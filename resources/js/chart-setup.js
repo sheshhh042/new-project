@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // Allow the chart to resize dynamically
                 plugins: {
                     legend: { position: 'top' },
                     tooltip: {
@@ -59,6 +60,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         }
                     }
+                },
+                layout: {
+                    padding: 10 // Add padding around the chart
                 }
             }
         });

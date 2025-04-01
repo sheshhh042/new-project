@@ -22,9 +22,10 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ asset('admin_assets/css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
    
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-   
+    @vite(['admin_assets/css/sb-admin-2.css','resources/js/app.js'])
+
 
 </head>
 

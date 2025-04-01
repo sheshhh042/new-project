@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', 'Research List')
-
 @section('content')
     <div class="d-flex align-items-center justify-content-between mb-3">
         @if(Auth::user()->role == 'admin')
@@ -12,10 +11,11 @@
     </div>
 
     <!-- Search & Filter Section -->
-    <form action="{{ route('research.search') }}" method="GET" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="Search for research..."
-                value="{{ request('keyword') }}" required>
+    <!-- filepath: c:\xampp\htdocs\bago\Project\resources\views\research\index.blade.php -->
+    <form id="searchForm" action="{{ route('research.search') }}" method="GET" class="mb-4 position-relative">
+        <div class="input-group mb-3"> <!-- Added mb-3 for spacing below the input -->
+            <input type="text" id="searchInput" name="keyword" class="form-control" placeholder="Search for research..."
+                value="{{ request('keyword') }}" required autocomplete="off">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search"></i> Search
@@ -23,26 +23,42 @@
             </div>
         </div>
 
-        <!-- Filter Dropdown -->
-        <div class="mt-2 d-flex align-items-center">
-            <div class="dropdown">
-                <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
-                    id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-filter mr-1"></i> Year
-                </button>
-                <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
-                    @for($year = 2017; $year <= 2025; $year += 2)
-                        @php $nextYear = $year + 1; @endphp
-                        <a class="dropdown-item px-3 py-2 text-sm"
-                            href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
-                            <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
-                        </a>
-                    @endfor
+        <!-- Search History Dropdown -->
+        <div id="searchHistoryDropdown" class="dropdown-menu w-100"
+            style="position: absolute; z-index: 1000; max-height: 90px; overflow-y: auto; display: none;">
+            @foreach($searchHistories as $history)
+                <div class="d-flex justify-content-between align-items-center px-3">
+                    <a href="#" class="dropdown-item search-history-item" data-keyword="{{ $history->keyword }}">
+                        {{ $history->keyword }}
+                        <span class="badge badge-primary badge-pill float-right">{{ $history->count }}</span>
+                    </a>
+                    <button class="delete-history-btn border-0 p-0" data-id="{{ $history->id }}"
+                        style="color: red; font-size: 18px; cursor: pointer;">
+                        <i class="fas fa-times"></i> <!-- Font Awesome "X" icon -->
+                    </button>
                 </div>
-            </div>
+            @endforeach
         </div>
     </form>
 
+    <!-- Filter Dropdown -->
+    <div class="mt-3 mb-4"> <!-- Added mt-3 for spacing above and mb-4 for spacing below -->
+        <div class="dropdown">
+            <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
+                id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-filter mr-1"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
+                @for($year = 2010; $year <= 2025; $year += 2)
+                    @php $nextYear = $year + 1; @endphp
+                    <a class="dropdown-item px-3 py-2 text-sm"
+                        href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
+                        <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
+                    </a>
+                @endfor
+            </div>
+        </div>
+    </div>
     <!-- Success Message -->
     @if(session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -171,6 +187,71 @@
                     if (confirm('Are you sure you want to delete this research?')) {
                         this.submit();
                         alert('Research deleted successfully!');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('searchInput');
+            const searchHistoryDropdown = document.getElementById('searchHistoryDropdown');
+
+            // Show the dropdown when the search input is focused
+            searchInput.addEventListener('focus', function () {
+                searchHistoryDropdown.style.display = 'block';
+            });
+
+            // Hide the dropdown when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!searchInput.contains(event.target) && !searchHistoryDropdown.contains(event.target)) {
+                    searchHistoryDropdown.style.display = 'none';
+                }
+            });
+
+            // Handle click on search history items
+            document.querySelectorAll('.search-history-item').forEach(item => {
+                item.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const keyword = this.getAttribute('data-keyword');
+                    searchInput.value = keyword; // Populate the search bar with the clicked keyword
+                    document.getElementById('searchForm').submit(); // Submit the form
+                });
+            });
+
+            // Handle delete button click
+            document.querySelectorAll('.delete-history-btn').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const id = this.getAttribute('data-id');
+
+                    if (confirm('Are you sure you want to delete this search history?')) {
+                        fetch(`/search-history/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Failed to delete search history.');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    alert(data.success);
+                                    location.reload(); // Reload the page to update the search history
+                                } else {
+                                    alert('Failed to delete search history.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('An error occurred while deleting the search history.');
+                            });
                     }
                 });
             });
