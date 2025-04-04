@@ -1,5 +1,5 @@
 <style>
-    
+
 </style>
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -24,7 +24,8 @@
 
     <!-- Nav Item - Department -->
     <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
+            aria-controls="collapseTwo">
             <i class="fa fa-server"></i>
             <span>Department</span>
         </a>
@@ -42,13 +43,16 @@
                 <a class="collapse-item" href="{{ route('research.department', 'Education') }}">Elementary Education</a>
                 <a class="collapse-item" href="{{ route('research.department', 'BSEd-English') }}">BSEd - English</a>
                 <a class="collapse-item" href="{{ route('research.department', 'BSEd-Filipino') }}">BSEd - Filipino</a>
-                <a class="collapse-item" href="{{ route('research.department', 'BSEd-Mathematics') }}">BSEd - Mathematics</a>
-                <a class="collapse-item" href="{{ route('research.department', 'BSEd-Social Studies') }}">BSEd - Social Studies</a>
+                <a class="collapse-item" href="{{ route('research.department', 'BSEd-Mathematics') }}">BSEd -
+                    Mathematics</a>
+                <a class="collapse-item" href="{{ route('research.department', 'BSEd-Social Studies') }}">BSEd - Social
+                    Studies</a>
 
                 <!-- Tourism & Hospitality Management -->
                 <span class="collapse-category d-block text-center font-weight-bold text-primary mt-2">HTM</span>
                 <a class="collapse-item" href="{{ route('research.department', 'Tourism') }}">Tourism</a>
-                <a class="collapse-item" href="{{ route('research.department', 'Hospitality Management') }}">Hospitality Management</a>
+                <a class="collapse-item" href="{{ route('research.department', 'Hospitality Management') }}">Hospitality
+                    Management</a>
             </div>
         </div>
     </li>
@@ -56,16 +60,16 @@
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 
-<!-- Nav Item - Recent Delete (Admin Only) -->
-@can('isAdmin') <!-- This ensures that only admins see this item -->
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('research.recentlyDeleted') }}">
-        <i class="fas fa-fw fa-trash-alt"></i>
-        <span>Recently Deleted</span>
-    </a>
-</li>
-@endcan
- <!-- Divider -->
+    <!-- Nav Item - Recent Delete (Admin Only) -->
+    @can('isAdmin') <!-- This ensures that only admins see this item -->
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('research.recentlyDeleted') }}">
+                <i class="fas fa-fw fa-trash-alt"></i>
+                <span>Recently Deleted</span>
+            </a>
+        </li>
+    @endcan
+    <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 
     <!-- Nav Item - Report -->
@@ -76,8 +80,25 @@
         </a>
     </li>
 
-   
-    
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Nav Item - Feedback -->
+        <li class="nav-item">
+    @can('isAdmin') <!-- If the user is an admin -->
+        <a class="nav-link" href="{{ route('feedback.admin') }}">
+            <i class="fa-solid fa-message"></i>
+            <span>Manage Feedback</span>
+        </a>
+    @else <!-- If the user is not an admin -->
+        <a class="nav-link" href="{{ route('feedback.user') }}">
+            <i class="fa-solid fa-message"></i>
+            <span>Feedback</span>
+        </a>
+    @endcan
+</li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Research List')
+@section('title', ' All Research List')
 @section('content')
     <div class="d-flex align-items-center justify-content-between mb-3">
         @if(Auth::user()->role == 'admin')
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Search & Filter Section -->
-    <!-- filepath: c:\xampp\htdocs\bago\Project\resources\views\research\index.blade.php -->
+
     <form id="searchForm" action="{{ route('research.search') }}" method="GET" class="mb-4 position-relative">
         <div class="input-group mb-3"> <!-- Added mb-3 for spacing below the input -->
             <input type="text" id="searchInput" name="keyword" class="form-control" placeholder="Search for research..."
@@ -59,6 +59,7 @@
             </div>
         </div>
     </div>
+</form>
     <!-- Success Message -->
     @if(session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

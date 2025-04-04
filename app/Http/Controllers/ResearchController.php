@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Research;
 use App\Models\SearchHistory;
 use App\Models\SearchLog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,6 +43,7 @@ class ResearchController extends Controller
 
     public function store(Request $request)
     {
+        // Validate the request data
         $request->validate([
             'date' => 'required|date',
             'research_title' => 'required|string|max:500',
@@ -57,9 +59,11 @@ class ResearchController extends Controller
                 }
             }],
         ]);
-
+    
+        // Handle file upload
         $filePath = $request->file('research_file')->store('research_files', 'public');
-
+    
+        // Create a new research entry
         Research::create([
             'date' => $request->date,
             'research_title' => $request->research_title,
@@ -68,9 +72,18 @@ class ResearchController extends Controller
             'subject_area' => $request->subject_area,
             'file_path' => $filePath,
             'reference_id' => $request->reference_id,
-            'keywords' => implode(',', array_map('trim', explode(',', $request->keywords))),
+            'keywords' => implode(',', array_map('trim', explode(',', $request->keywords))), // Trim and store keywords
         ]);
+    
+        $keywords = array_map('trim', explode(',', $request->keywords));
+        foreach ($keywords as $keyword) {
+            DB::table('search_logs')->updateOrInsert(
+                ['keyword' => $keyword],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
+        }
 
+        // Redirect to the research index page with a success message
         return redirect()->route('research.index')->with('success', 'Research added successfully.');
     }
 
@@ -85,16 +98,17 @@ class ResearchController extends Controller
         return view('research.edit', compact('research', 'departments'));
     }
 
-    public function update(Request $request, Research $research)
+    public function update(Request $request, $id)
     {
+        // Validate the request data
         $request->validate([
+            'reference_id' => 'nullable|string|max:255',
             'date' => 'required|date',
-            'research_title' => 'required|string|max:255',
+            'research_title' => 'required|string|max:500',
             'author' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'subject_area' => 'required|string|max:255',
             'research_file' => 'nullable|file|mimes:pdf|max:2048',
-            'reference_id' => 'nullable|string|max:255',
             'keywords' => ['required', 'string', function ($attribute, $value, $fail) {
                 $keywords = explode(',', $value);
                 if (count($keywords) > 5) {
@@ -102,24 +116,30 @@ class ResearchController extends Controller
                 }
             }],
         ]);
-
-        $data = $request->only([
-            'date', 'research_title', 'author', 'location', 'subject_area', 'reference_id'
-        ]);
-        $data['keywords'] = implode(',', array_map('trim', explode(',', $request->keywords)));
-
+    
+        // Find the research entry
+        $research = Research::findOrFail($id);
+    
+        // Handle file upload if a new file is provided
         if ($request->hasFile('research_file')) {
-            if ($research->file_path && Storage::exists($research->file_path)) {
-                Storage::delete($research->file_path);
-            }
-            $data['file_path'] = $request->file('research_file')->store('research_files', 'public');
+            $filePath = $request->file('research_file')->store('research_files', 'public');
+            $research->file_path = $filePath;
         }
-
-        $research->update($data);
-
+    
+        // Update the research entry
+        $research->update([
+            'reference_id' => $request->reference_id,
+            'date' => $request->date,
+            'research_title' => $request->research_title,
+            'author' => $request->author,
+            'location' => $request->location,
+            'subject_area' => $request->subject_area,
+            'keywords' => implode(',', array_map('trim', explode(',', $request->keywords))), // Trim and store keywords
+        ]);
+    
+        // Redirect back with a success message
         return redirect()->route('research.index')->with('success', 'Research updated successfully.');
     }
-
     public function destroy(Research $research)
     {
         // Soft delete
@@ -155,59 +175,63 @@ class ResearchController extends Controller
     
         return redirect()->route('research.recentlyDeleted')->with('success', 'Research permanently deleted.');
     }
-      
+
         public function search(Request $request)
-    {
-        $keyword = $request->input('keyword');
-        $filter = $request->input('filter');
-        $department = $request->input('department'); // Get department parameter
-    
-        // Track search history
-        if (!empty($keyword)) {
-            SearchHistory::updateOrCreate(
-                ['keyword' => $keyword],
-                ['count' => \DB::raw('count + 1')] // Increment the count
-            );
-        }
-    
-        $query = Research::query();
+        {
+            $keyword = $request->input('keyword');
+            $filter = $request->input('filter');
+            $department = $request->input('department'); // Get department parameter
         
-        // Filter by keyword
-        if (!empty($keyword)) {
-            $query->where(function ($q) use ($keyword) {
-                $q->where('research_title', 'LIKE', "%$keyword%")
-                    ->orWhere('author', 'LIKE', "%$keyword%")
-                    ->orWhere('location', 'LIKE', "%$keyword%")
-                    ->orWhere('subject_area', 'LIKE', "%$keyword%")
-                    ->orWhere('date', 'LIKE', "%$keyword%")
-                    ->orWhere('reference_id', 'LIKE', "%$keyword%"); // Include reference_id in search
-            });
-        }
-    
-        // Filter by year range
-        if (!empty($filter)) {
-            $years = explode('-', $filter);
-            if (count($years) === 2) {
-                $query->whereBetween('date', ["{$years[0]}-01-01", "{$years[1]}-12-31"]);
+            // Track search history
+            if (!empty($keyword)) {
+                SearchHistory::updateOrCreate(
+                    ['keyword' => $keyword],
+                    ['count' => \DB::raw('count + 1')] // Increment the count
+                );
             }
+        
+            $query = Research::query();
+        
+            // Filter by keyword
+            if (!empty($keyword)) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('research_title', 'LIKE', "%$keyword%")
+                        ->orWhere('author', 'LIKE', "%$keyword%")
+                        ->orWhere('location', 'LIKE', "%$keyword%")
+                        ->orWhere('subject_area', 'LIKE', "%$keyword%")
+                        ->orWhere('date', 'LIKE', "%$keyword%")
+                        ->orWhere('reference_id', 'LIKE', "%$keyword%")
+                        ->orWhere('keywords', 'LIKE', "%$keyword%"); // Include keywords in search
+                });
+            }
+        
+            // Filter by year range
+            if (!empty($filter)) {
+                $years = explode('-', $filter);
+                if (count($years) === 2) {
+                    $query->whereBetween('date', ["{$years[0]}-01-01", "{$years[1]}-12-31"]);
+                }
+            }
+        
+            // Filter by department
+            if (!empty($department)) {
+                $query->where('subject_area', $department);
+            }
+        
+            $researches = $query->get();
+        
+            // Fetch search history
+            $searchHistories = SearchHistory::orderBy('count', 'desc')->get();
+        
+            // Return the view with the required variables
+            return view('research.index', [
+                'researches' => $researches,
+                'searchHistories' => $searchHistories,
+                'keyword' => $keyword,
+                'filter' => $filter,
+                'department' => $department,
+            ]);
         }
-    
-        // Filter by department
-        if (!empty($department)) {
-            $query->where('subject_area', $department);
-        }
-    
-        $researches = $query->get();
-    
-        // Fetch search history
-        $searchHistories = SearchHistory::orderBy('count', 'desc')->get();
-    
-        // Return the view with the required variables
-        return view('research.department', [
-            'researches' => $researches,
-            'department' => $department,
-        ]);
-    }
     public function viewFile($id)
     {
         $research = Research::findOrFail($id);

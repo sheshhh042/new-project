@@ -13,7 +13,7 @@
                     {{ session()->get('error') }}
                 </div>
             @endif
-            <h2 class="text-center mb-4">Add Research</h2>
+            <h2 class="text-center mb-4" style="font-weight: bold;">Add Research</h2>
             <form action="{{ route('research.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -60,7 +60,7 @@
                 <!-- Keywords -->
                 <div class="mb-3">
                     <label for="keywords" class="form-label">Keywords</label>
-                    <input type="text" name="keywords" class="form-control" id="keywords"
+                    <input type="text" name="keywords" id="keywords" class="form-control"
                         placeholder="Enter up to 5 keywords, separated by commas" required>
                 </div>
 
@@ -72,7 +72,7 @@
 
                 <!-- Submit Button -->
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary">Add Research Title</button>
                 </div>
             </form>
         </div>

@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ResearchController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\SearchHistoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -72,10 +74,32 @@ Route::middleware('auth')->group(function () {
     
     // Report Route
     Route::get('/report', [ReportController::class, 'index'])->name('report');
+
+});
+
+// Feedback Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/feedback', [FeedbackController::class, 'userFeedback'])->name('feedback.user'); // User feedback page
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store'); // Handle feedback submission
+    Route::get('/admin/feedback', [FeedbackController::class, 'index'])->name('feedback.admin'); // Admin feedback page
+
+        Route::middleware(['auth', 'can:isAdmin'])->group(function () {
+        Route::get('/admin/feedback', [FeedbackController::class, 'index'])->name('feedback.admin'); // Admin feedback page
+        Route::post('/admin/feedback/{feedback}/mark-as-read', [FeedbackController::class, 'markAsRead'])->name('admin.feedback.markAsRead'); // Mark feedback as read
+        Route::delete('/admin/feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('admin.feedback.destroy'); // Delete feedback
+    });
 });
 
 // Search Route
 Route::get('/research/search', [ResearchController::class, 'search'])->name('research.search');
+
+
+
+Route::get('/keywords/create', [KeywordController::class, 'create'])->name('keywords.create');
+Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
+
+
+Route::get('/keywords', [KeywordController::class, 'index'])->name('keywords.index');
 
 // Test Email Route (Optional)
 Route::get('/test-email', function () {

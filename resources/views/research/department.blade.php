@@ -19,23 +19,23 @@
     </form>
 
         <!-- Filter Dropdown -->
-        <div class="mt-2 d-flex align-items-center">
-            <div class="dropdown">
-                <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
-                    id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-filter mr-1"></i> 
-                </button>
-                <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
-                    @for($year = 2010; $year <= 2025; $year += 2)
-                        @php $nextYear = $year + 1; @endphp
-                        <a class="dropdown-item px-3 py-2 text-sm"
-                            href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
-                            <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
-                        </a>
-                    @endfor
-                </div>
+        <div class="mt-3 mb-4"> <!-- Added mt-3 for spacing above and mb-4 for spacing below -->
+        <div class="dropdown">
+            <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
+                id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-filter mr-1"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
+                @for($year = 2010; $year <= 2025; $year += 2)
+                    @php $nextYear = $year + 1; @endphp
+                    <a class="dropdown-item px-3 py-2 text-sm"
+                        href="{{ route('research.search', ['filter' => $year . '-' . $nextYear]) }}">
+                        <i class="fas fa-calendar-alt mr-2"></i> {{ $year }}-{{ $nextYear }}
+                    </a>
+                @endfor
             </div>
         </div>
+    </div>
     </form>
 
     @if(session()->has('success'))
@@ -154,4 +154,5 @@
             document.getElementById('pdfViewer' + id).src = url;
         }
     </script>
+    
 @endsection

@@ -7,7 +7,7 @@
     <hr />
     <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="shadow-lg rounded p-5" style="background-color: #fff; width: 90%;"> <!-- Wide floating box -->
-            <h2 class="text-center mb-4">Edit Research</h2>
+            <h2 class="text-center mb-4" style="font-weight: bold;">Edit Research</h2>
 
             <form action="{{ route('research.update', $research->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
