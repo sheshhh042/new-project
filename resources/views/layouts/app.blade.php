@@ -25,12 +25,13 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('admin_assets/css/sb-admin-2.min.css') }}" rel="stylesheet">
     
-    <!-- Font Awesome 6 -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    <!-- Include SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
    
-    @vite(['admin_assets/css/sb-admin-2.css','resources/js/app.js'])
+    <link rel="stylesheet" href="{{ Vite::asset('resources/admin_assets/css/sb-admin-2.min.css') }}">
+    <script type="module" src="{{ Vite::asset('resources/js/chart-setup.js') }}"></script>
 
+    
 
 </head>
 
@@ -137,7 +138,6 @@
             });
         @endif
     </script>
-    
 </body>
 
 </html>

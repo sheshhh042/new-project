@@ -6,20 +6,22 @@
 
     <hr />
     <!-- Search & Filter Section -->
-        <form action="{{ route('research.search') }}" method="GET" class="mb-4">
+    <form id="searchForm" action="{{ route('research.search') }}" method="GET" class="mb-4 position-relative">
         <div class="input-group">
-            <input type="text" name="keyword" class="form-control" placeholder="Search for research..." value="{{ request('keyword') }}" required>
-            <input type="hidden" name="department" value="{{ $department }}"> <!-- Ensure this is set -->
+            <input type="text" id="searchInput" name="keyword" class="form-control" placeholder="Search for research..."
+                value="{{ request('keyword') }}" autocomplete="off" aria-autocomplete="list">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search"></i> Search
                 </button>
             </div>
         </div>
+        <div id="suggestionsDropdown" class="list-group shadow"
+            style="display:none; position:absolute; z-index:1000; width:100%;"></div>
     </form>
 
-        <!-- Filter Dropdown -->
-        <div class="mt-3 mb-4"> <!-- Added mt-3 for spacing above and mb-4 for spacing below -->
+    <!-- Filter Dropdown -->
+    <div class="mt-3 mb-4"> <!-- Added mt-3 for spacing above and mb-4 for spacing below -->
         <div class="dropdown">
             <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
                 id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -49,7 +51,7 @@
         <table class="table table-hover text-center">
             <thead class="table-primary">
                 <tr>
-                    <th>Book ID</th>
+                    <!-- <th>Book ID</th> -->
                     <th>Research Title</th>
                     <th>Author</th>
                     <th>Date</th>
@@ -62,7 +64,7 @@
                 @if ($researches->count() > 0)
                     @foreach($researches as $research)
                         <tr>
-                            <td>{{ $research->reference_id }}</td>
+                            <!-- <td>{{ $research->reference_id }}</td> -->
                             <td>{{ $research->Research_Title }}</td>
                             <td>{{ $research->Author }}</td>
                             <td>{{ $research->date }}</td>
@@ -154,5 +156,118 @@
             document.getElementById('pdfViewer' + id).src = url;
         }
     </script>
-    
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+    let timeoutId;
+
+    // Show suggestions dropdown
+    function showDropdown() {
+        suggestionsDropdown.style.display = 'block';
+    }
+
+    // Hide suggestions dropdown
+    function hideDropdown() {
+        suggestionsDropdown.style.display = 'none';
+    }
+
+    // Fetch suggestions from server
+    async function fetchSuggestions(query) {
+        if (!query || query.length < 2) {
+            hideDropdown();
+            return;
+        }
+
+        try {
+            const response = await fetch(`/research/suggestions?q=${encodeURIComponent(query)}`);
+            const suggestions = await response.json();
+            
+            if (suggestions.length > 0) {
+                renderSuggestions(suggestions);
+                showDropdown();
+            } else {
+                hideDropdown();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            hideDropdown();
+        }
+    }
+
+    // Render suggestions in dropdown
+    function renderSuggestions(suggestions) {
+        suggestionsDropdown.innerHTML = '';
+        
+        suggestions.forEach(suggestion => {
+            const item = document.createElement('a');
+            item.href = '#';
+            item.className = 'list-group-item list-group-item-action';
+            item.textContent = suggestion;
+            
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                searchInput.value = suggestion;
+                hideDropdown();
+                document.getElementById('searchForm').submit();
+            });
+            
+            suggestionsDropdown.appendChild(item);
+        });
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fetchSuggestions(this.value), 300);
+    });
+
+    searchInput.addEventListener('focus', function() {
+        if (this.value.length >= 2) {
+            fetchSuggestions(this.value);
+        }
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !suggestionsDropdown.contains(e.target)) {
+            hideDropdown();
+        }
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const items = suggestionsDropdown.querySelectorAll('.list-group-item');
+        if (!items.length) return;
+
+        let activeIndex = -1;
+        items.forEach((item, index) => {
+            if (item.classList.contains('active')) {
+                activeIndex = index;
+                item.classList.remove('active');
+            }
+        });
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const newIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+            items[newIndex].classList.add('active');
+        } 
+        else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const newIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+            items[newIndex].classList.add('active');
+        } 
+        else if (e.key === 'Enter') {
+            e.preventDefault();
+            const activeItem = suggestionsDropdown.querySelector('.list-group-item.active');
+            if (activeItem) {
+                searchInput.value = activeItem.textContent;
+                hideDropdown();
+                document.getElementById('searchForm').submit();
+            }
+        }
+    });
+});
+</script>
 @endsection

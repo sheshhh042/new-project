@@ -5,8 +5,12 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileSettingsController;
 use App\Http\Controllers\ResearchController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ReportController;
+use App\Models\Research;
 use App\Http\Controllers\KeywordController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ResearchSuggestionController;
 use App\Http\Controllers\SearchHistoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -16,22 +20,35 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('register', 'register')->name('register');
     Route::post('register', 'registerSave')->name('register.save');
     
-    Route::get('login', 'login')->name('login');
+    Route::get('/', 'login')->name('login');
     Route::post('login', 'loginAction')->name('login.action');
 
     Route::get('logout', 'logout')->middleware('auth')->name('logout');
 });
+
+
+// Password Reset Routes
+Route::get('password/forgot', [AuthController::class, 'showForgotPasswordForm'])->name('password.forgot');
+Route::post('password/forgot', [AuthController::class, 'sendResetLink'])->name('password.forgot.action');
+Route::get('password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('password/reset', [AuthController::class, 'updatePassword'])->name('password.reset.action');
 
 // OTP Routes
 Route::controller(OtpController::class)->group(function () {
     Route::get('otp', 'showOtpForm')->name('otp.verify');
     Route::post('otp', 'verifyOtp')->name('otp.verify');
     Route::post('otp/resend', 'resendOtp')->name('otp.resend');
+    Route::post('/send-otp', [ProfileSettingsController::class, 'sendOtp'])->name('send.otp');
+    
 });
 
 // Protected Routes (Requires Authentication)
 Route::middleware('auth')->group(function () {
+    Route::get('/report', [ReportController::class, 'index'])->name('report');
+    
+        // Report Route
     Route::get('dashboard', [ResearchController::class, 'index'])->name('dashboard');
+    
 
     // Research Routes
     Route::controller(ResearchController::class)->prefix('research')->group(function () {
@@ -45,6 +62,8 @@ Route::middleware('auth')->group(function () {
         Route::get('user-view', 'userView')->name('research.userView');
         Route::get('department/{department}', 'department')->name('research.department');
         Route::get('search', 'search')->name('research.search');
+        Route::get('/research/{id}/view', [ResearchController::class, 'viewFile'])->name('research.view');
+
 
         // Recently Deleted Research Routes
         Route::get('/recently-deleted', [ResearchController::class, 'recentlyDeleted'])->name('research.recentlyDeleted');
@@ -71,9 +90,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile-settings/update', [ProfileSettingsController::class, 'update'])->name('settings.update');
     Route::put('/profile/update', [ProfileSettingsController::class, 'updateProfile'])->name('profile.update');
     Route::get('/profile', [ProfileSettingsController::class, 'profile'])->name('profile');
+     Route::put('/settings/update', [SettingController::class,'update'])->name('settings.update');
     
-    // Report Route
-    Route::get('/report', [ReportController::class, 'index'])->name('report');
 
 });
 
@@ -92,8 +110,16 @@ Route::middleware(['auth'])->group(function () {
 
 // Search Route
 Route::get('/research/search', [ResearchController::class, 'search'])->name('research.search');
+Route::post('/track-search', [KeywordController::class, 'trackSearch'])->name('track.search');
 
-
+Route::get('/research/file/{id}', function($id) {
+    $research = Research::findOrFail($id);
+    $path = storage_path('app/public/' . $research->file_path);
+    
+    if (!file_exists($path)) abort(404);
+    
+    return response()->file($path);
+});
 
 Route::get('/keywords/create', [KeywordController::class, 'create'])->name('keywords.create');
 Route::post('/keywords', [KeywordController::class, 'store'])->name('keywords.store');
@@ -109,3 +135,7 @@ Route::get('/test-email', function () {
 
     return 'Email sent';
 });
+
+// Replace your existing suggestion route with:
+Route::get('/research/suggestions', [ResearchSuggestionController::class, 'index'])
+    ->name('research.suggestions');

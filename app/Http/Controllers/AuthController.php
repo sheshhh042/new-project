@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -153,5 +154,68 @@ class AuthController extends Controller
 
         return redirect()->back()->with('success', 'A new OTP has been sent to your email.');
     }
+    
+public function showForgotPasswordForm()
+{
+    return view('auth.forgot_password');
 }
-;
+
+public function sendResetLink(Request $request)
+{
+    // Validate the email
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    // Generate a unique token
+    $token = Str::random(64);
+
+    // Save the token in a temporary file (or cache)
+    $filePath = storage_path("framework/cache/password_reset_{$request->email}.txt");
+    file_put_contents($filePath, $token);
+
+    // Generate the reset link
+    $resetLink = route('password.reset.form', ['token' => $token, 'email' => $request->email]);
+
+    // Send the reset email
+    Mail::send('auth.emails.password_reset', ['resetLink' => $resetLink], function ($message) use ($request) {
+        $message->to($request->email)
+            ->subject('Reset Your Password');
+    });
+
+    return redirect()->back()->with('success', 'A password reset link has been sent to your email.');
+}
+public function showResetForm($token, Request $request)
+{
+    return view('auth.password_reset', [
+        'token' => $token,
+        'email' => $request->email,
+    ]);
+}
+
+public function updatePassword(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+        'password' => 'required|string|min:8|confirmed',
+        'token' => 'required',
+    ]);
+
+    // Verify the token
+    $filePath = storage_path("framework/cache/password_reset_{$request->email}.txt");
+    if (!file_exists($filePath) || file_get_contents($filePath) !== $request->token) {
+        return redirect()->back()->withErrors(['token' => 'This password reset token is invalid or has expired.']);
+    }
+
+    // Update the user's password
+    $user = User::where('email', $request->email)->first();
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    // Delete the token file
+    unlink($filePath);
+
+    return redirect()->route('login')->with('success', 'Your password has been reset successfully.');
+}
+};

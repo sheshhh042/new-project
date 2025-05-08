@@ -9,14 +9,16 @@ class MakeDepartmentNullableInSearchHistoriesTable extends Migration
     public function up()
     {
         Schema::table('search_histories', function (Blueprint $table) {
-            $table->string('department')->nullable()->change();
+            if (!Schema::hasColumn('search_histories', 'department')) {
+                $table->string('department')->nullable();
+            }
         });
     }
-
+    
     public function down()
     {
         Schema::table('search_histories', function (Blueprint $table) {
-            $table->string('department')->nullable(false)->change();
+            $table->dropColumn('department');
         });
     }
 }

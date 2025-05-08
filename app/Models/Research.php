@@ -23,4 +23,12 @@ class Research extends Model
     ];
 
     protected $dates = ['deleted_at']; // Define the deleted_at column for soft deletes
+
+    public function scopeSearchSuggestions($query, $searchTerm)
+    {
+        return $query->where('Research_Title', 'like', "%{$searchTerm}%")
+            ->orWhere('Author', 'like', "%{$searchTerm}%")
+            ->orWhere('subject_area', 'like', "%{$searchTerm}%");
+    }
+
 }

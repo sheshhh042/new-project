@@ -13,22 +13,29 @@
                     {{ session()->get('error') }}
                 </div>
             @endif
+
+            <!-- SweetAlert for Validation Errors -->
+            @if ($errors->any())
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: '{{ $errors->first() }}', // Display the first validation error
+                    });
+                </script>
+            @endif
+
             <h2 class="text-center mb-4" style="font-weight: bold;">Add Research</h2>
             <form action="{{ route('research.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <!-- Book ID -->
-                <div class="mb-3">
-                    <label for="reference_id" class="form-label">Book ID</label>
-                    <input type="text" name="reference_id" class="form-control" id="reference_id" placeholder="Optional">
-                </div>
-
-                <!-- Date -->
-                <div class="mb-3">
-                    <label for="date" class="form-label">Date</label>
-                    <input type="month" name="date" class="form-control" id="date" required>
-                </div>
-
+                <!--<div class="mb-3">-->
+                <!--    <label for="reference_id" class="form-label">Book ID</label>-->
+                <!--    <input type="text" name="reference_id" class="form-control" id="reference_id" placeholder="Optional">-->
+                <!--</div>-->
+                
                 <!-- Research Title -->
                 <div class="mb-3">
                     <label for="research_title" class="form-label">Research Title</label>
@@ -39,6 +46,12 @@
                 <div class="mb-3">
                     <label for="author" class="form-label">Author</label>
                     <input type="text" name="author" class="form-control" id="author" required>
+                </div>
+                    
+                <!-- Date -->
+                <div class="mb-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="month" name="date" class="form-control" id="date" required>
                 </div>
 
                 <!-- Location -->

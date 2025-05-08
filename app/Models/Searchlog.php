@@ -9,11 +9,11 @@ class Searchlog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['keyword']; // Allow mass assignment
+    protected $fillable = ['keyword', 'total']; // Allow mass assignment
 
-    // // Optional: Define default order
-    // public static function latestLogs($limit = 10) {
-    //     return self::latest()->limit($limit)->get();
+    // Optional: Define default order
+    public static function latestLogs($limit = 10) {
+        return self::latest()->limit($limit)->get();
     
 }
-
+}

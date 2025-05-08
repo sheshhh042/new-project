@@ -1,7 +1,43 @@
 @extends('layouts.app')
 
-@section('title', ' All Research List')
+@section('title', 'All Research List')
 @section('content')
+
+    @section('styles')
+        <style>
+            /* Search Suggestions Styling */
+            #suggestionsDropdown {
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid rgba(0, 0, 0, .15);
+                border-radius: 0.25rem;
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .175);
+                position: absolute;
+                z-index: 1000;
+                width: calc(100% - 80px);
+                /* Adjust based on your search button width */
+            }
+
+            #suggestionsDropdown .dropdown-item {
+                padding: 0.5rem 1.5rem;
+                white-space: normal;
+                word-wrap: break-word;
+            }
+
+            #suggestionsDropdown .dropdown-item.active,
+            #suggestionsDropdown .dropdown-item:hover {
+                background-color: #f8f9fa;
+                color: #212529;
+                cursor: pointer;
+            }
+
+            /* Make sure the search form has relative positioning */
+            #searchForm {
+                position: relative;
+            }
+        </style>
+    @endsection
+
     <div class="d-flex align-items-center justify-content-between mb-3">
         @if(Auth::user()->role == 'admin')
             <a href="{{ route('research.create') }}" class="btn btn-primary">
@@ -10,45 +46,30 @@
         @endif
     </div>
 
-    <!-- Search & Filter Section -->
-
+    <!-- Search Form -->
     <form id="searchForm" action="{{ route('research.search') }}" method="GET" class="mb-4 position-relative">
-        <div class="input-group mb-3"> <!-- Added mb-3 for spacing below the input -->
+        <div class="input-group">
             <input type="text" id="searchInput" name="keyword" class="form-control" placeholder="Search for research..."
-                value="{{ request('keyword') }}" required autocomplete="off">
+                value="{{ request('keyword') }}" autocomplete="off" aria-autocomplete="list">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search"></i> Search
                 </button>
             </div>
         </div>
-
-        <!-- Search History Dropdown -->
-        <div id="searchHistoryDropdown" class="dropdown-menu w-100"
-            style="position: absolute; z-index: 1000; max-height: 90px; overflow-y: auto; display: none;">
-            @foreach($searchHistories as $history)
-                <div class="d-flex justify-content-between align-items-center px-3">
-                    <a href="#" class="dropdown-item search-history-item" data-keyword="{{ $history->keyword }}">
-                        {{ $history->keyword }}
-                        <span class="badge badge-primary badge-pill float-right">{{ $history->count }}</span>
-                    </a>
-                    <button class="delete-history-btn border-0 p-0" data-id="{{ $history->id }}"
-                        style="color: red; font-size: 18px; cursor: pointer;">
-                        <i class="fas fa-times"></i> <!-- Font Awesome "X" icon -->
-                    </button>
-                </div>
-            @endforeach
-        </div>
+        <div id="suggestionsDropdown" class="list-group shadow"
+            style="display:none; position:absolute; z-index:1000; width:100%;"></div>
     </form>
 
     <!-- Filter Dropdown -->
-    <div class="mt-3 mb-4"> <!-- Added mt-3 for spacing above and mb-4 for spacing below -->
+    <div class="mt-3 mb-4">
         <div class="dropdown">
             <button class="btn btn-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button"
                 id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-filter mr-1"></i>
             </button>
             <div class="dropdown-menu dropdown-menu-right small" aria-labelledby="filterDropdown">
+                
                 @for($year = 2010; $year <= 2025; $year += 2)
                     @php $nextYear = $year + 1; @endphp
                     <a class="dropdown-item px-3 py-2 text-sm"
@@ -59,7 +80,7 @@
             </div>
         </div>
     </div>
-</form>
+
     <!-- Success Message -->
     @if(session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -73,9 +94,9 @@
     <!-- Research Table -->
     <div class="table-responsive">
         <table class="table table-hover">
-            <thead class="table-primary text-center"> <!-- Add the text-center class here -->
+            <thead class="table-primary text-center">
                 <tr>
-                    <th>Book ID</th>
+                    <!-- <th>Book ID</th> -->
                     <th>Research Title</th>
                     <th>Author</th>
                     <th>Date of Approval</th>
@@ -84,31 +105,45 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody class="text-center"> <!-- Add the text-center class here -->
+            <tbody class="text-center">
                 @forelse($researches as $research)
                     <tr>
-                        <td>{{ $research->reference_id }}</td>
+                        <!-- <td>{{ $research->reference_id }}</td> -->
                         <td>{{ $research->Research_Title }}</td>
                         <td>{{ $research->Author }}</td>
                         <td>{{ $research->date }}</td>
                         <td>{{ $research->Location }}</td>
                         <td>{{ $research->subject_area }}</td>
                         <td>
+
+                            <!-- View button remains unchanged -->
                             <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
                                 data-target="#viewPDFModal{{ $research->id }}"
                                 onclick="viewPDF('{{ asset('storage/' . $research->file_path) }}', {{ $research->id }})">
-                                <i class="fas fa-eye"></i> View
+                                <i class="fas fa-eye"></i>
                             </button>
 
-                            <!-- Admin Options -->
+                            <!-- Admin Options - Minimal three-dot dropdown -->
                             @if(Auth::user()->role == 'admin')
-                                <a href="{{ route('research.edit', $research->id) }}" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal{{ $research->id }}">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn btn-link btn-sm text-secondary p-0" type="button"
+                                        id="dropdownMenuButton{{ $research->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $research->id }}">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('research.edit', $research->id) }}">
+                                                <i class="fas fa-edit me-2"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal{{ $research->id }}">
+                                                <i class="fas fa-trash me-2"></i> Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
 
                                 <!-- Delete Confirmation Modal -->
                                 <div class="modal fade" id="deleteModal{{ $research->id }}" tabindex="-1"
@@ -174,88 +209,123 @@
 
 @section('scripts')
     <script>
-        function viewPDF(url, id) {
-            document.getElementById('pdfViewer' + id).src = url;
-        }
-    </script>
-
-    <script>
-        // Delete Confirmation with Notification
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll('.delete-form').forEach(form => {
-                form.addEventListener('submit', function (event) {
-                    event.preventDefault();
-                    if (confirm('Are you sure you want to delete this research?')) {
-                        this.submit();
-                        alert('Research deleted successfully!');
-                    }
-                });
-            });
-        });
-    </script>
-
-    <script>
         document.addEventListener("DOMContentLoaded", function () {
             const searchInput = document.getElementById('searchInput');
-            const searchHistoryDropdown = document.getElementById('searchHistoryDropdown');
+            const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+            let timeoutId;
 
-            // Show the dropdown when the search input is focused
-            searchInput.addEventListener('focus', function () {
-                searchHistoryDropdown.style.display = 'block';
+            // Show suggestions dropdown
+            function showDropdown() {
+                suggestionsDropdown.style.display = 'block';
+            }
+
+            // Hide suggestions dropdown
+            function hideDropdown() {
+                suggestionsDropdown.style.display = 'none';
+            }
+
+            // Fetch suggestions from server
+            async function fetchSuggestions(query) {
+                if (!query || query.length < 2) {
+                    hideDropdown();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/research/suggestions?q=${encodeURIComponent(query)}`);
+                    const suggestions = await response.json();
+
+                    if (suggestions.length > 0) {
+                        renderSuggestions(suggestions);
+                        showDropdown();
+                    } else {
+                        hideDropdown();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    hideDropdown();
+                }
+            }
+
+            // Render suggestions in dropdown
+            function renderSuggestions(suggestions) {
+                suggestionsDropdown.innerHTML = '';
+
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = suggestion;
+
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        searchInput.value = suggestion;
+                        hideDropdown();
+                        document.getElementById('searchForm').submit();
+                    });
+
+                    suggestionsDropdown.appendChild(item);
+                });
+            }
+
+            // Event listeners
+            searchInput.addEventListener('input', function () {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => fetchSuggestions(this.value), 300);
             });
 
-            // Hide the dropdown when clicking outside
-            document.addEventListener('click', function (event) {
-                if (!searchInput.contains(event.target) && !searchHistoryDropdown.contains(event.target)) {
-                    searchHistoryDropdown.style.display = 'none';
+            searchInput.addEventListener('focus', function () {
+                if (this.value.length >= 2) {
+                    fetchSuggestions(this.value);
                 }
             });
 
-            // Handle click on search history items
-            document.querySelectorAll('.search-history-item').forEach(item => {
-                item.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const keyword = this.getAttribute('data-keyword');
-                    searchInput.value = keyword; // Populate the search bar with the clicked keyword
-                    document.getElementById('searchForm').submit(); // Submit the form
-                });
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!searchInput.contains(e.target) && !suggestionsDropdown.contains(e.target)) {
+                    hideDropdown();
+                }
             });
 
-            // Handle delete button click
-            document.querySelectorAll('.delete-history-btn').forEach(button => {
-                button.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const id = this.getAttribute('data-id');
+            // Keyboard navigation
+            searchInput.addEventListener('keydown', function (e) {
+                const items = suggestionsDropdown.querySelectorAll('.list-group-item');
+                if (!items.length) return;
 
-                    if (confirm('Are you sure you want to delete this search history?')) {
-                        fetch(`/search-history/${id}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Failed to delete search history.');
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                if (data.success) {
-                                    alert(data.success);
-                                    location.reload(); // Reload the page to update the search history
-                                } else {
-                                    alert('Failed to delete search history.');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('An error occurred while deleting the search history.');
-                            });
+                let activeIndex = -1;
+                items.forEach((item, index) => {
+                    if (item.classList.contains('active')) {
+                        activeIndex = index;
+                        item.classList.remove('active');
                     }
                 });
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const newIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+                    items[newIndex].classList.add('active');
+                }
+                else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const newIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+                    items[newIndex].classList.add('active');
+                }
+                else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const activeItem = suggestionsDropdown.querySelector('.list-group-item.active');
+                    if (activeItem) {
+                        searchInput.value = activeItem.textContent;
+                        hideDropdown();
+                        document.getElementById('searchForm').submit();
+                    }
+                }
             });
         });
+        // Function to view PDF in modal
+        window.viewPDF = function (filePath, researchId) {
+            const pdfViewer = document.getElementById('pdfViewer' + researchId);
+            pdfViewer.src = filePath;
+        };
+
     </script>
 @endsection

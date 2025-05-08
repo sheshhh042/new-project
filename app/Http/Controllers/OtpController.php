@@ -36,39 +36,19 @@ class OtpController extends Controller
         return redirect()->route('otp.verify')->with('success', 'OTP has been sent to your email.');
     }
 
-    public function verifyOtp(Request $request)
+    public function verify(Request $request)
     {
-        $request->validate([
-            'otp' => 'required|numeric',
-        ]);
-    
-        // Retrieve the user by OTP
-        $user = User::where('otp', $request->otp)
-                    ->where('otp_expires_at', '>=', now()) // Ensure OTP is still valid
-                    ->first();
-    
-        if (!$user) {
-            \Log::error('Invalid or expired OTP.', [
-                'submitted_otp' => $request->otp,
-                'current_time' => now(),
-            ]);
-            return redirect()->back()->withErrors(['login' => 'Invalid or expired OTP.']);
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Invalid or expired verification link');
         }
     
-        \Log::info('OTP verified. Logging in user.', ['user_id' => $user->id]);
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect('/dashboard');
+        }
     
-        // Clear OTP and mark as verified
-        $user->update([
-            'otp' => null,
-            'otp_expires_at' => null,
-        ]);
+        $request->user()->markEmailAsVerified();
     
-        // Log in the user
-        Auth::login($user);
-    
-        \Log::info('User logged in successfully. Redirecting to dashboard.', ['user_id' => $user->id]);
-    
-        return redirect()->route('dashboard')->with('success', 'OTP verified successfully.');
+        return redirect('/dashboard')->with('verified', true);
     }
     
 

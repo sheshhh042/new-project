@@ -137,7 +137,7 @@
                                                     <div class="mb-3">
                                                         <h6>Feedback Message</h6>
                                                         <div class="p-3 bg-light rounded">
-                                                            {{ $feedback->message }}
+                                                            {{ $feedback->feedback }}
                                                         </div>
                                                     </div>
                                                     @if($feedback->allow_contact)
